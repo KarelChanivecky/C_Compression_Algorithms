@@ -1,5 +1,5 @@
 //
-// Created by animesh on 2020-10-26.
+// Created by animesh on 2020-10-27.
 //
 
 
@@ -14,7 +14,7 @@ int main(int argc, char * argv[]) {
     } else {
         src_fd = STDIN_FILENO;
     }
-    compress_rle(src_fd);
+    decompress_rle(src_fd);
     if(argc == 2){
         close(src_fd);
     }

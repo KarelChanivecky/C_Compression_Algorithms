@@ -24,3 +24,5 @@ target_compile_options(rle_lib PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 add_executable(compress-rle rle_lib.c rle_lib.h compress-rle.c )
 target_compile_options(compress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
+add_executable(decompress-rle rle_lib.c rle_lib.h decompress-rle.c )
+target_compile_options(decompress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
