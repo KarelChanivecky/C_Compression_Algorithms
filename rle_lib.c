@@ -34,8 +34,9 @@ size_t h_write(int fd, void * buf, size_t b_to_write ){
 
 void compress_rle(int src_fd){
     uint8_t in;
-    uint8_t counter = 0;
-    uint8_t sen_counter = 0;
+    uint8_t max = UINT8_MAX;
+    unsigned int counter = 0;
+    unsigned int  sen_counter = 0;
     uint8_t temp = 0;
     uint8_t sen = 37;
     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE); // print sentinel as first char.
@@ -74,7 +75,7 @@ void compress_rle(int src_fd){
                     counter = 1;
                 } else {
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-                    h_write(STDOUT_FILENO, (void *) UINT8_MAX, BYTES_PER_CYCLE);
+                    h_write(STDOUT_FILENO, &max, BYTES_PER_CYCLE);
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
                     sen_counter= sen_counter - 255;
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
@@ -86,7 +87,7 @@ void compress_rle(int src_fd){
                 temp = in;
             } else{
                 if(counter <= 4){
-                    for(uint8_t i = 0; i < counter; i++)
+                    for(unsigned int  i = 0; i < counter; i++)
                         h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
                     counter = 0;
                     if(in == 37){
@@ -106,7 +107,7 @@ void compress_rle(int src_fd){
                     }
                 } else if(counter > 255){
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-                    h_write(STDOUT_FILENO, (void *) UINT8_MAX, BYTES_PER_CYCLE);
+                    h_write(STDOUT_FILENO, &max, BYTES_PER_CYCLE);
                     h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
                     counter = counter - 255;
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
@@ -132,12 +133,12 @@ void compress_rle(int src_fd){
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
         } else {
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, (void *) UINT8_MAX, BYTES_PER_CYCLE);
+            h_write(STDOUT_FILENO, &max, BYTES_PER_CYCLE);
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
         }
     } else if(counter > 0 ){
         if(counter <= 4){
-            for(uint8_t i = 0; i < counter; i++)
+            for(unsigned int i = 0; i < counter; i++)
                 h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
             counter = 0;
         } else if(counter  > 4 && counter <= 255 ){
@@ -146,7 +147,7 @@ void compress_rle(int src_fd){
             h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
         } else if(counter > 255){
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, (void *) UINT8_MAX, BYTES_PER_CYCLE);
+            h_write(STDOUT_FILENO, &max, BYTES_PER_CYCLE);
             h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
             counter = counter - 255;
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
