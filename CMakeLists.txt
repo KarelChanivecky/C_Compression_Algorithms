@@ -18,3 +18,9 @@ add_executable(decompress-huffman huffman_lib.c huffman_lib.h decompress-huffman
 target_link_libraries(decompress-huffman dc dc_utils rt)
 target_compile_options(decompress-huffman PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
+add_library(rle_lib rle_lib.c rle_lib.h)
+target_compile_options(rle_lib PRIVATE -Wpedantic -Wall -Wextra -fPIC)
+
+add_executable(compress-rle rle_lib.c rle_lib.h compress-rle.c )
+target_compile_options(compress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
+
