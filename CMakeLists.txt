@@ -10,7 +10,7 @@ add_library(huffman_lib huffman_lib.c huffman_lib.h)
 target_link_libraries(huffman_lib dc dc_utils rt)
 target_compile_options(huffman_lib PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
-add_executable(compress-huffman huffman_lib.c huffman_lib.h compress-huffman.c )
+add_executable(compress-huffman huffman_lib.c huffman_lib.h compress-huffman.c)
 target_link_libraries(compress-huffman dc dc_utils rt)
 target_compile_options(compress-huffman PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
