@@ -11,6 +11,10 @@
 
 #include "lzw_lib.h"
 #include "stdint.h"
+#include "dc/stdlib.h"
+
+#define LZW_TABLE_SIZE 4096
+#define macro(args)
 
 uint8_t get_bits(uint16_t container, uint16_t mask, uint8_t shift) {
     mask <<= shift;
@@ -37,7 +41,23 @@ uint16_t get_eight_msbs(uint16_t container) {
     return get_eight_bits(container, 4);
 }
 
-uint16_t get_four_lsbs(uint16_t container) {
+uint16_t get_eight_lsbs(uint16_t container) {
     return get_eight_bits(container, 0);
+}
+
+char ** get_initialized_lzw_table() {
+    char ** lzw_table = dc_malloc(sizeof(char *) * LZW_TABLE_SIZE);
+    for (uint8_t i = 0; i < UINT8_MAX; i++) {
+        char * ch = (char *) dc_malloc(sizeof(char) * 2);
+        ch[0] = i;
+        ch[1] = 0;
+        lzw_table[i] = ch;
+    }
+    for (uint16_t i = UINT8_MAX; i < LZW_TABLE_SIZE; i++) {
+        char * empty_ch = (char *) dc_malloc(sizeof(char));
+        *empty_ch = 0;
+        lzw_table[i] = empty_ch;
+    }
+    return lzw_table;
 }
 
