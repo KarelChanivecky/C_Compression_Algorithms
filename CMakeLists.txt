@@ -29,7 +29,10 @@ target_compile_options(decompress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
 add_library(lzw_lib lzw_lib.c lzw_lib.h)
 target_compile_options(lzw_lib PRIVATE -Wpedantic -Wall -Wextra -fPIC)
-#
+
+add_executable(compress-lzw lzw_lib.c lzw_lib.h compress-lzw.c )
+target_compile_options(compress-lzw PRIVATE -Wpedantic -Wall -Wextra -fPIC)
+
 #add_executable(compress-rle rle_lib.c rle_lib.h compress-rle.c )
 #target_compile_options(compress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 #
