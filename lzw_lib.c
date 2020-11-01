@@ -45,19 +45,23 @@ uint16_t get_eight_lsbs(uint16_t container) {
     return get_eight_bits(container, 0);
 }
 
-char ** get_initialized_lzw_table() {
-    char ** lzw_table = dc_malloc(sizeof(char *) * LZW_TABLE_SIZE);
+uint8_t ** get_initialized_lzw_table() {
+    uint8_t ** lzw_table = dc_malloc(sizeof(uint8_t *) * LZW_TABLE_SIZE);
     for (uint8_t i = 0; i < UINT8_MAX; i++) {
-        char * ch = (char *) dc_malloc(sizeof(char) * 2);
+        uint8_t * ch = (uint8_t *) dc_malloc(sizeof(uint8_t) * 2);
         ch[0] = i;
         ch[1] = 0;
         lzw_table[i] = ch;
     }
     for (uint16_t i = UINT8_MAX; i < LZW_TABLE_SIZE; i++) {
-        char * empty_ch = (char *) dc_malloc(sizeof(char));
+        uint8_t * empty_ch = (uint8_t *) dc_malloc(sizeof(uint8_t));
         *empty_ch = 0;
         lzw_table[i] = empty_ch;
     }
     return lzw_table;
+}
+
+void free_table(uint8_t) {
+
 }
 
