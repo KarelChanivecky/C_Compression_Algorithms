@@ -61,7 +61,10 @@ uint8_t ** get_initialized_lzw_table() {
     return lzw_table;
 }
 
-void free_table(uint8_t) {
-
+void free_table(uint8_t ** lzw_table) {
+    for ( int i = 0; i < LZW_TABLE_SIZE; ++i ) {
+        dc_free(( void ** ) &lzw_table[ i ] );
+    }
+    dc_free(( void ** ) &lzw_table );
 }
 
