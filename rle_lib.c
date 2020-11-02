@@ -43,14 +43,26 @@ void decompress_rle( int src_fd ) {
     }
     sen = in;
     c_read = h_read( src_fd, &in, BYTES_PER_CYCLE );
+    if (c_read == 0) {
+        fprintf(stderr, "File is empty!");
+        exit(EXIT_FAILURE);
+    }
     while ( c_read > 0 ) {
         if ( in != sen ) {
             h_write( STDOUT_FILENO, &in, BYTES_PER_CYCLE );
         } else if ( in == 37 ) {
             uint8_t count;
-            h_read( src_fd, &count, BYTES_PER_CYCLE );
+            c_read = h_read( src_fd, &count, BYTES_PER_CYCLE );
+            if (c_read == 0) {
+                fprintf(stderr, "File is corrupted");
+                exit(EXIT_FAILURE);
+            }
             uint8_t c;
-            h_read( src_fd, &c, BYTES_PER_CYCLE );
+            c_read = h_read( src_fd, &c, BYTES_PER_CYCLE );
+            if (c_read == 0) {
+                fprintf(stderr, "File is corrupted");
+                exit(EXIT_FAILURE);
+            }
             for ( uint8_t i = 0; i < count; i++ )
                 h_write( STDOUT_FILENO, &c, BYTES_PER_CYCLE );
         }
