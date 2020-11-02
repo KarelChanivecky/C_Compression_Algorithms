@@ -37,6 +37,10 @@ void decompress_rle( int src_fd ) {
     size_t c_read;
     uint8_t sen;
     c_read = h_read( src_fd, &in, BYTES_PER_CYCLE );
+    if (c_read == 0) {
+        fprintf(stderr, "File is empty!");
+        exit(EXIT_FAILURE);
+    }
     sen = in;
     c_read = h_read( src_fd, &in, BYTES_PER_CYCLE );
     while ( c_read > 0 ) {

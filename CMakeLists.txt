@@ -37,10 +37,7 @@ add_executable(compress-lzw compress-lzw.c )
 target_link_libraries(compress-lzw lzw_lib)
 target_compile_options(compress-lzw PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
+add_executable(decompress-lzw decompress-lzw.c )
+target_link_libraries(decompress-lzw lzw_lib)
+target_compile_options(decompress-lzw PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 
-
-#add_executable(compress-rle rle_lib.c rle_lib.h compress-rle.c )
-#target_compile_options(compress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)
-#
-#add_executable(decompress-rle rle_lib.c rle_lib.h decompress-rle.c )
-#target_compile_options(decompress-rle PRIVATE -Wpedantic -Wall -Wextra -fPIC)

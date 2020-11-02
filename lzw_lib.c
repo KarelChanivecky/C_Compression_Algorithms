@@ -39,8 +39,12 @@ uint8_t get_four_bits( uint16_t container, uint8_t shift ) {
     return get_bits( container, 15u, shift );
 }
 
-uint16_t get_four_msbs( uint16_t container ) {
+uint16_t get_four_msbs_16b( uint16_t container ) {
     return get_four_bits( container, 8 );
+}
+
+uint16_t get_four_msbs_8b( uint8_t container ) {
+    return get_four_bits( container, 4 );
 }
 
 uint16_t get_four_lsbs( uint16_t container ) {
@@ -79,7 +83,8 @@ void free_table( uint8_t ** lzw_table ) {
 }
 
 uint8_t * append( uint8_t * codeword, uint16_t codeword_length, uint8_t ch ) {
-    uint8_t * new_codeword = ( uint8_t * ) dc_realloc( codeword, codeword_length + 2 );
+    uint8_t * new_codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t ) * ( codeword_length + 2 ));
+    strncpy(( char * ) new_codeword, ( char * ) codeword, codeword_length );
     new_codeword[ codeword_length ] = ch;
     new_codeword[ codeword_length + 1 ] = 0;
     return new_codeword;
@@ -99,7 +104,7 @@ uint16_t index_of_codeword( uint8_t ** lzw_table, uint8_t * codeword, uint16_t c
 
 void write_codeword( uint16_t index, uint8_t * buffer, bool * half_buffer ) {
     if ( *half_buffer ) {
-        *buffer |= get_four_msbs( index );
+        *buffer |= get_four_msbs_16b( index );
         dc_write( STDOUT_FILENO, buffer, BUFFER_SIZE );
         *buffer = 0;
         uint8_t remainder = get_eight_lsbs( index );
@@ -125,6 +130,7 @@ void compress_lzw( int src_fd ) {
     if ( bytes_read == 0 ) {
         fprintf( stderr, "File is empty!" );
         dc_close( src_fd );
+        free_table( lzw_table );
         exit( EXIT_FAILURE );
     }
 
@@ -148,70 +154,72 @@ void compress_lzw( int src_fd ) {
     }
     uint16_t index = index_of_codeword( lzw_table, codeword, codeword_length );
     write_codeword( index, &buffer, &half_buffer );
-    if (half_buffer) {
+    if ( half_buffer ) {
         write_codeword( PADDING, &buffer, &half_buffer );
     }
     free_table( lzw_table );
 }
 
-uint8_t get_ch(uint16_t first, uint16_t second){
 
-}
-
-uint16_t extract_char(uint8_t * ch, uint16_t code, bool half_buffer){
-    uint16_t remainder;
-    if(!half_buffer){
-        remainder = get_four_lsbs(code);
-        uint8_t first = get_four_bits(code,);
-        uint8_t second = get_four_bits(code,);
-        ch = get_ch(first, second);
+uint8_t read_codeword( int src_fd, uint16_t * ch, uint8_t * buffer, bool * half_buffer ) {
+    uint8_t bytes_read;
+    *ch = 0;
+    if ( *half_buffer ) {
+        *ch = get_four_lsbs( *buffer ) << 8u;
+        bytes_read = dc_read( src_fd, buffer, BUFFER_SIZE );
+        *ch |= *buffer;
+        *buffer = 0;
+    } else {
+        bytes_read = dc_read( src_fd, ch, BUFFER_SIZE );
+        *ch <<= 4u;
+        bytes_read += dc_read( src_fd, buffer, BUFFER_SIZE );
+        *ch |= get_four_msbs_8b( *buffer );
     }
-
+    *half_buffer = !*half_buffer;
+    return bytes_read;
 }
 
-void decompress_lzw(int src_fd){
+void decompress_lzw( int src_fd ) {
     uint8_t ** lzw_table = get_initialized_lzw_table();
     uint16_t table_insertion_index = INITIAL_TABLE_INSERTION_INDEX;
-    uint16_t code;
-
+    uint16_t max_table_index = 255;
+    uint16_t codeword_index = 0;
+    uint16_t codeword_length;
+    uint8_t buffer = 0;
+    uint8_t * codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t ));
+    *codeword = 0;
     bool half_buffer = false;
-    uint8_t ch = 0;
-    uint16_t remainder;
 
-    size_t bytes_read = dc_read( src_fd, &code, (BYTES_PER_CYCLE * 2) );
-    if (bytes_read == 0) {
-        fprintf(stderr, "File is empty!");
-        dc_close(src_fd);
-        exit(EXIT_FAILURE);
+    size_t bytes_read = read_codeword( src_fd, &codeword_index, &buffer, &half_buffer );
+    if ( bytes_read != 2 ) {
+        fprintf( stderr, "Incorrect file size!" );
+        dc_close( src_fd );
+        free_table( lzw_table );
+        exit( EXIT_FAILURE );
     }
+    write( STDOUT_FILENO, lzw_table[ codeword_index ], BYTES_PER_CYCLE );
 
-
-
+    while ( bytes_read ) {
+        codeword = lzw_table[ codeword_index ];
+        codeword_length = strlen(( char * ) codeword );
+        bytes_read = read_codeword( src_fd, &codeword_index, &buffer, &half_buffer );
+        if ( !bytes_read ) {
+            continue;
+        }
+        if ( codeword_index <= max_table_index ) {
+            codeword = append( codeword, codeword_length, *lzw_table[ codeword_index ] );
+//            codeword_length++;
+            lzw_table[ table_insertion_index ] = codeword;
+            dc_write( STDOUT_FILENO, lzw_table[ codeword_index ], strlen(( char * ) lzw_table[ codeword_index ] ));
+        } else {
+            codeword = append( codeword, codeword_length, *codeword );
+            codeword_length++;
+            lzw_table[ table_insertion_index ] = codeword;
+            dc_write( STDOUT_FILENO, codeword, codeword_length );
+        }
+        max_table_index = max_table_index == LZW_TABLE_SIZE ?
+                          LZW_TABLE_SIZE : max_table_index + 1;
+        table_insertion_index = table_insertion_index == LZW_TABLE_SIZE ?
+                                INITIAL_TABLE_INSERTION_INDEX : table_insertion_index + 1;
+    }
 }
-
-//    uint8_t first_in;
-//    uint8_t second_in;
-//    uint8_t third_in;
-
-//size_t bytes_read = dc_read( src_fd, &first_in, BYTES_PER_CYCLE );
-//if ( bytes_read == 0 ) {
-//fprintf( stderr, "File is empty!" );
-//dc_close( src_fd );
-//exit( EXIT_FAILURE );
-//}
-//
-//bytes_read = dc_read( src_fd, &second_in, BYTES_PER_CYCLE );
-//if ( bytes_read == 0 ) {
-//fprintf( stderr, "File is corrupt!" );
-//dc_close( src_fd );
-//exit( EXIT_FAILURE );
-//}
-//
-//bytes_read = dc_read( src_fd, &third_in, BYTES_PER_CYCLE );
-//if ( bytes_read == 0 ) {
-//half_buffer = true;
-//}
-//
-//remainder = extract_char(&ch, first_in, second_in, third_in, half_buffer);
-
-#pragma clang diagnostic pop
