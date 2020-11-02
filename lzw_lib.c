@@ -155,7 +155,7 @@ void compress_lzw( int src_fd ) {
     uint16_t index = index_of_codeword( lzw_table, codeword, codeword_length );
     write_codeword( index, &buffer, &half_buffer );
     if ( half_buffer ) {
-        write_codeword( PADDING, &buffer, &half_buffer );
+        dc_write(STDOUT_FILENO, &buffer, BUFFER_SIZE);
     }
     free_table( lzw_table );
 }
@@ -208,7 +208,6 @@ void decompress_lzw( int src_fd ) {
         }
         if ( codeword_index <= max_table_index ) {
             codeword = append( codeword, codeword_length, *lzw_table[ codeword_index ] );
-//            codeword_length++;
             lzw_table[ table_insertion_index ] = codeword;
             dc_write( STDOUT_FILENO, lzw_table[ codeword_index ], strlen(( char * ) lzw_table[ codeword_index ] ));
         } else {
@@ -222,4 +221,5 @@ void decompress_lzw( int src_fd ) {
         table_insertion_index = table_insertion_index == LZW_TABLE_SIZE ?
                                 INITIAL_TABLE_INSERTION_INDEX : table_insertion_index + 1;
     }
+    free_table(lzw_table);
 }

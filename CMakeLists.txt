@@ -40,4 +40,3 @@ target_compile_options(compress-lzw PRIVATE -Wpedantic -Wall -Wextra -fPIC)
 add_executable(decompress-lzw decompress-lzw.c )
 target_link_libraries(decompress-lzw lzw_lib)
 target_compile_options(decompress-lzw PRIVATE -Wpedantic -Wall -Wextra -fPIC)
-

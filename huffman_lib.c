@@ -19,7 +19,7 @@
 #include "stdbool.h"
 #include "limits.h"
 #include "stdio.h"
-#include "netinet/in.h"
+#include "arpa/inet.h"
 
 #define TEMP_FILENAME "huffman_tempXXXXXXX"
 #define BYTES_PER_CHAR 1
@@ -322,23 +322,17 @@ dlinked_list * parse_huffman_header( int src_fd ) {
     return char_counts;
 }
 
-uint8_t get_spillover_bit_count( dlinked_list * char_counts, dc_tree_node * huffman_tree ) {
-    if ( char_counts->size == 0 ) {
-        fprintf( stderr, "Error! No compression header!" );
-        exit( EXIT_FAILURE );
+uint8_t tree_bits(dc_tree_node * tree, size_t height) {
+    if (dc_tree_is_leaf(tree)) {
+        char_container * char_wrapper = (char_container*) tree->content;
+        return height * char_wrapper->count;
     }
-    dlink * link = char_counts->head;
-    size_t spillover_bits = 0;
-    size_t tree_height = dc_tree_height( huffman_tree );
-    while ( link ) {
-        uint8_t ch = get_char_from_tree_node( link->content );
-        size_t ch_count = get_count_from_tree_node( link->content );
-        uint8_t path[tree_height + 1];
-        get_path_to_char( huffman_tree, ch, path, 0 );
-        spillover_bits = ( spillover_bits + ch_count * get_path_length( path )) % CHAR_BIT;
-        link = link->next;
-    }
-    return spillover_bits;
+    return tree_bits(tree->left, height + 1) +
+    tree_bits(tree->right, height + 1);
+}
+
+uint8_t get_spillover_bit_count( dc_tree_node * huffman_tree ) {
+    return tree_bits(huffman_tree, 0) % 8 ;
 }
 
 dc_tree_node * decompress_char( dc_tree_node * huffman_tree,
@@ -395,11 +389,18 @@ void decode_file( int src_fd, dc_tree_node * huffman_tree, uint8_t spill_over_bi
     }
 }
 
+void print_node(void * v_node) {
+    dc_tree_node * node = (dc_tree_node *) v_node;
+    char_container * char_wrapper = (char_container * ) node->content;
+    printf("char: %c count: %d\n", char_wrapper->ch, char_wrapper->count);
+}
+
 void huffman_decompress( int src_fd ) {
     dlinked_list * char_counts = parse_huffman_header( src_fd );
+    dlink_map(char_counts, print_node);
     dlinked_list * sorted_ch_counts = dlinked_quicksort( char_counts, sorting_comparator );
     dc_tree_node * huffman_tree = make_huffman_tree( sorted_ch_counts );
-    size_t spillover_bit_count = get_spillover_bit_count( char_counts, huffman_tree );
+    size_t spillover_bit_count = get_spillover_bit_count( huffman_tree );
     decode_file( src_fd, huffman_tree, spillover_bit_count );
     free_tree_contents( &huffman_tree );
     dlinked_free_list( &char_counts );
