@@ -110,7 +110,7 @@ void compress_rle(int src_fd){
                 }
                 temp = in;
             } else{
-                if(counter <= 4){
+                if(counter <= 3){
                     for(unsigned int  i = 0; i < counter; i++)
                         h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
                     counter = 0;
@@ -119,7 +119,7 @@ void compress_rle(int src_fd){
                     }else{
                         counter++;
                     }
-                } else if(counter  > 4 && counter <= 255 ){
+                } else if(counter  > 3 && counter <= 255 ){
                     h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
                     h_write(STDOUT_FILENO, &counter, BYTES_PER_CYCLE);
                     h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
@@ -171,11 +171,11 @@ void compress_rle(int src_fd){
             counter = 1;
         }
     } else if(counter > 0 ){
-        if(counter <= 4){
+        if(counter <= 3){
             for(unsigned int i = 0; i < counter; i++)
                 h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
             counter = 0;
-        } else if(counter  > 4 && counter <= 255 ){
+        } else if(counter  > 3 && counter <= 255 ){
             h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
             h_write(STDOUT_FILENO, &counter, BYTES_PER_CYCLE);
             h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);

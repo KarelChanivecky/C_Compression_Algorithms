@@ -153,3 +153,65 @@ void compress_lzw( int src_fd ) {
     }
     free_table( lzw_table );
 }
+
+uint8_t get_ch(uint16_t first, uint16_t second){
+
+}
+
+uint16_t extract_char(uint8_t * ch, uint16_t code, bool half_buffer){
+    uint16_t remainder;
+    if(!half_buffer){
+        remainder = get_four_lsbs(code);
+        uint8_t first = get_four_bits(code,);
+        uint8_t second = get_four_bits(code,);
+        ch = get_ch(first, second);
+    }
+
+}
+
+void decompress_lzw(int src_fd){
+    uint8_t ** lzw_table = get_initialized_lzw_table();
+    uint16_t table_insertion_index = INITIAL_TABLE_INSERTION_INDEX;
+    uint16_t code;
+
+    bool half_buffer = false;
+    uint8_t ch = 0;
+    uint16_t remainder;
+
+    size_t bytes_read = dc_read( src_fd, &code, (BYTES_PER_CYCLE * 2) );
+    if (bytes_read == 0) {
+        fprintf(stderr, "File is empty!");
+        dc_close(src_fd);
+        exit(EXIT_FAILURE);
+    }
+
+
+
+}
+
+//    uint8_t first_in;
+//    uint8_t second_in;
+//    uint8_t third_in;
+
+//size_t bytes_read = dc_read( src_fd, &first_in, BYTES_PER_CYCLE );
+//if ( bytes_read == 0 ) {
+//fprintf( stderr, "File is empty!" );
+//dc_close( src_fd );
+//exit( EXIT_FAILURE );
+//}
+//
+//bytes_read = dc_read( src_fd, &second_in, BYTES_PER_CYCLE );
+//if ( bytes_read == 0 ) {
+//fprintf( stderr, "File is corrupt!" );
+//dc_close( src_fd );
+//exit( EXIT_FAILURE );
+//}
+//
+//bytes_read = dc_read( src_fd, &third_in, BYTES_PER_CYCLE );
+//if ( bytes_read == 0 ) {
+//half_buffer = true;
+//}
+//
+//remainder = extract_char(&ch, first_in, second_in, third_in, half_buffer);
+
+#pragma clang diagnostic pop
