@@ -24,6 +24,7 @@
 #define BYTES_PER_CYCLE 1
 #define INITIAL_TABLE_INSERTION_INDEX 256
 #define NOT_FOUND (UINT16_MAX)
+#define PADDING 0
 
 uint8_t get_bits( uint16_t container, uint16_t mask, uint8_t shift ) {
     mask <<= shift;
@@ -86,7 +87,7 @@ uint8_t * append( uint8_t * codeword, uint16_t codeword_length, uint8_t ch ) {
 
 uint16_t index_of_codeword( uint8_t ** lzw_table, uint8_t * codeword, uint16_t codeword_length ) {
     uint16_t index = 0;
-    while ( index < LZW_TABLE_SIZE && lzw_table[ index ] != 0 && index < codeword_length ) {
+    while ( index < LZW_TABLE_SIZE ) {
         if ( strncmp(( char * ) lzw_table[ index ], ( char * ) codeword, codeword_length ) == 0 ) {
             return index;
         }
@@ -100,6 +101,7 @@ void write_codeword( uint16_t index, uint8_t * buffer, bool * half_buffer ) {
     if ( *half_buffer ) {
         *buffer |= get_four_msbs( index );
         dc_write( STDOUT_FILENO, buffer, BUFFER_SIZE );
+        *buffer = 0;
         uint8_t remainder = get_eight_lsbs( index );
         dc_write( STDOUT_FILENO, &remainder, BUFFER_SIZE );
     } else {
@@ -110,18 +112,15 @@ void write_codeword( uint16_t index, uint8_t * buffer, bool * half_buffer ) {
     *half_buffer = !*half_buffer;
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "DanglingPointers"
 void compress_lzw( int src_fd ) {
     uint8_t ** lzw_table = get_initialized_lzw_table();
     uint8_t ch;
     uint16_t codeword_length = 0;
-    uint8_t buffer;
+    uint8_t buffer = 0;
     bool half_buffer = false;
     uint16_t table_insertion_index = INITIAL_TABLE_INSERTION_INDEX;
-    uint8_t * codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t * ));
+    uint8_t * codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t ));
     *codeword = 0;
-
     size_t bytes_read = dc_read( src_fd, &ch, BYTES_PER_CYCLE );
     if ( bytes_read == 0 ) {
         fprintf( stderr, "File is empty!" );
@@ -131,8 +130,8 @@ void compress_lzw( int src_fd ) {
 
     while ( 0 < bytes_read ) {
         uint16_t possible_code = index_of_codeword( lzw_table, codeword, codeword_length );
+        codeword = append( codeword, codeword_length, ch );
         codeword_length++;
-        append( codeword, codeword_length, ch );
         if ( index_of_codeword( lzw_table, codeword, codeword_length ) == NOT_FOUND) {
             lzw_table[ table_insertion_index ] = codeword;
             write_codeword( possible_code, &buffer, &half_buffer );
@@ -140,15 +139,17 @@ void compress_lzw( int src_fd ) {
             if ( table_insertion_index == LZW_TABLE_SIZE ) {
                 table_insertion_index = INITIAL_TABLE_INSERTION_INDEX;
             }
-            free( codeword );
-            codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t * ));
-            *codeword = 0;
-            codeword_length = 0;
+            codeword = ( uint8_t * ) dc_malloc( sizeof( uint8_t ) * 2 );
+            codeword[ 0 ] = ch;
+            codeword[ 1 ] = 0;
+            codeword_length = 1;
         }
         bytes_read = dc_read( src_fd, &ch, BYTES_PER_CYCLE );
     }
+    uint16_t index = index_of_codeword( lzw_table, codeword, codeword_length );
+    write_codeword( index, &buffer, &half_buffer );
     if (half_buffer) {
-        write_codeword(0, &buffer, &half_buffer);
+        write_codeword( PADDING, &buffer, &half_buffer );
     }
+    free_table( lzw_table );
 }
-#pragma clang diagnostic pop
