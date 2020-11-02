@@ -109,20 +109,20 @@ void compress_rle( int src_fd ) {
                     counter = 1;
                 }
                 temp = in;
-            } else{
-                if(counter <= 3){
-                    for(unsigned int  i = 0; i < counter; i++)
-                        h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
+            } else {
+                if ( counter <= 3 ) {
+                    for ( unsigned int i = 0; i < counter; i++ )
+                        h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
                     counter = 0;
                     if ( in == 37 ) {
                         sen_counter++;
                     } else {
                         counter++;
                     }
-                } else if(counter  > 3 && counter <= 255 ){
-                    h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-                    h_write(STDOUT_FILENO, &counter, BYTES_PER_CYCLE);
-                    h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
+                } else if ( counter > 3 && counter <= 255 ) {
+                    h_write( STDOUT_FILENO, &sen, BYTES_PER_CYCLE );
+                    h_write( STDOUT_FILENO, &counter, BYTES_PER_CYCLE );
+                    h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
                     counter = 0;
                     if ( in == 37 ) {
                         sen_counter++;
@@ -170,25 +170,25 @@ void compress_rle( int src_fd ) {
             sen_counter = 0;
             counter = 1;
         }
-    } else if(counter > 0 ){
-        if(counter <= 3){
-            for(unsigned int i = 0; i < counter; i++)
-                h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
+    } else if ( counter > 0 ) {
+        if ( counter <= 3 ) {
+            for ( unsigned int i = 0; i < counter; i++ )
+                h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
             counter = 0;
-        } else if(counter  > 3 && counter <= 255 ){
-            h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, &counter, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
-        } else if(counter > 255){
-            while(counter > 255) {
-                h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-                h_write(STDOUT_FILENO, &max, BYTES_PER_CYCLE);
-                h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
+        } else if ( counter > 3 && counter <= 255 ) {
+            h_write( STDOUT_FILENO, &sen, BYTES_PER_CYCLE );
+            h_write( STDOUT_FILENO, &counter, BYTES_PER_CYCLE );
+            h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
+        } else if ( counter > 255 ) {
+            while ( counter > 255 ) {
+                h_write( STDOUT_FILENO, &sen, BYTES_PER_CYCLE );
+                h_write( STDOUT_FILENO, &max, BYTES_PER_CYCLE );
+                h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
                 counter = counter - 255;
             }
-            h_write(STDOUT_FILENO, &sen, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, &counter, BYTES_PER_CYCLE);
-            h_write(STDOUT_FILENO, &temp, BYTES_PER_CYCLE);
+            h_write( STDOUT_FILENO, &sen, BYTES_PER_CYCLE );
+            h_write( STDOUT_FILENO, &counter, BYTES_PER_CYCLE );
+            h_write( STDOUT_FILENO, &temp, BYTES_PER_CYCLE );
         }
     }
 
