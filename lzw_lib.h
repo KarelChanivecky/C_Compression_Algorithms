@@ -13,5 +13,6 @@
 #define ASSIGNMENT3_LZW_LIB_H
 
 void compress_lzw( int src_fd );
+void decompress_lzw(int src_fd);
 
 #endif //ASSIGNMENT3_LZW_LIB_H
