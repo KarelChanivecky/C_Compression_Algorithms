@@ -50,7 +50,7 @@ void decompress_rle( int src_fd ) {
     while ( c_read > 0 ) {
         if ( in != sen ) {
             h_write( STDOUT_FILENO, &in, BYTES_PER_CYCLE );
-        } else if ( in == 37 ) {
+        } else if ( in == sen ) {
             uint8_t count;
             c_read = h_read( src_fd, &count, BYTES_PER_CYCLE );
             if (c_read == 0) {

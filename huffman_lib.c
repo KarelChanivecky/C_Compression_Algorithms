@@ -222,15 +222,6 @@ bool get_path_to_char( dc_tree_node * tree, uint8_t ch, uint8_t * path, size_t c
     return false;
 }
 
-size_t get_path_length( uint8_t * path ) {
-    size_t path_length = 0;
-    while ( *path != END_OF_PATH ) {
-        path_length++;
-        path++;
-    }
-    return path_length;
-}
-
 void encode_file( int src_fd, dc_tree_node * huffman_tree ) {
     uint8_t buffer = 0;
     uint8_t buffer_index = 0; // keep track of how many bits have been pushed to buffer
@@ -389,15 +380,8 @@ void decode_file( int src_fd, dc_tree_node * huffman_tree, uint8_t spill_over_bi
     }
 }
 
-void print_node(void * v_node) {
-    dc_tree_node * node = (dc_tree_node *) v_node;
-    char_container * char_wrapper = (char_container * ) node->content;
-    printf("char: %c count: %d\n", char_wrapper->ch, char_wrapper->count);
-}
-
 void huffman_decompress( int src_fd ) {
     dlinked_list * char_counts = parse_huffman_header( src_fd );
-    dlink_map(char_counts, print_node);
     dlinked_list * sorted_ch_counts = dlinked_quicksort( char_counts, sorting_comparator );
     dc_tree_node * huffman_tree = make_huffman_tree( sorted_ch_counts );
     size_t spillover_bit_count = get_spillover_bit_count( huffman_tree );
