@@ -268,11 +268,6 @@ void encode_file( int src_fd, dc_tree_node * huffman_tree ) {
     }
 }
 
-void print_list(void * v_node) {
-    dc_tree_node * node = v_node;
-    char_container * cha = node->content;
-    printf("char: %c count: %d\n", cha->ch, cha->count);
-}
 
 void huffman_compress( int src_fd ) {
     char temp_filename[] = TEMP_FILENAME;
@@ -389,7 +384,6 @@ void decode_file( int src_fd, dc_tree_node * huffman_tree, uint8_t spill_over_bi
 
 void huffman_decompress( int src_fd ) {
     dlinked_list * char_counts = parse_huffman_header( src_fd );
-//    dlink_map(char_counts, print_list);
     dlinked_list * sorted_ch_counts = dlinked_quicksort( char_counts, sorting_comparator );
     dc_tree_node * huffman_tree = make_huffman_tree( sorted_ch_counts );
     size_t spillover_bit_count = get_spillover_bit_count( huffman_tree );
